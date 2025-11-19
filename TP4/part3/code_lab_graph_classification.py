@@ -20,7 +20,7 @@ def load_dataset():
     # your code here #
     ##################
     
-    dataset = TUDataset(root="dataset",name="MUTAG")
+    dataset = TUDataset(root="datasets",name="MUTAG")
     Gs = []
     y = [data.y.item() for data in dataset]
     for data in dataset:
@@ -125,7 +125,7 @@ def graphlet_kernel(Gs_train, Gs_test, n_samples=200):
             subG = G.subgraph(s)
 
             for j in range(len(graphlets)):
-                if nx.is_isomorphic(graphlets[i],subG):
+                if nx.is_isomorphic(graphlets[j],subG):
                     phi_train[i,j]+=1
                     break
         
@@ -144,7 +144,7 @@ def graphlet_kernel(Gs_train, Gs_test, n_samples=200):
             subG = G.subgraph(s)
 
             for j in range(len(graphlets)):
-                if nx.is_isomorphic(graphlets[i],subG):
+                if nx.is_isomorphic(graphlets[j],subG):
                     phi_test[i,j]+=1
                     break
 
