@@ -20,7 +20,7 @@ def load_dataset():
     # your code here #
     ##################
     
-    dataset = TUDataset(root="datasets",name="MUTAG")
+    dataset = TUDataset(root="../datasets",name="MUTAG")
     Gs = []
     y = [data.y.item() for data in dataset]
     for data in dataset:

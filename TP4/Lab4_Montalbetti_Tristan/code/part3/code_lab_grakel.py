@@ -198,7 +198,7 @@ kernel_experiments = {
     
     "WL (h=4)": WeisfeilerLehman(n_iter=4, normalize=True, base_graph_kernel=VertexHistogram),
 
-    "Shortest Path": ShortestPath(normalize=True, with_labels=True),
+    "Shortest Path": ShortestPath(normalize=False, with_labels=True),
     
     # --- COMPUTATIONALLY EXPENSIVE KERNELS ---
     # I have commented this out because the theoretical complexity of the RW kernel 
