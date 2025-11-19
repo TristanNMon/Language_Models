@@ -83,6 +83,7 @@ import matplotlib.pyplot as plt
 
 # Task 11
 
+
 def create_graphs_of_words(docs, vocab, window_size):
     graphs = list()
     for idx,doc in enumerate(docs):
@@ -91,31 +92,49 @@ def create_graphs_of_words(docs, vocab, window_size):
         ##################
         # your code here #
         ##################
-        # add nodes
-        G.add_nodes_from(vocab)
-
-        words = docs.split()
-
-        # add edges based on sliding widow:
-        for i in range(len(words)):
-            w1 = words[i]
-
-            for j in range(1, window_size):
-                if i + j < len(words) and w1 != words[i+j]:
-                    G.add_edge(w1, words[i+j])
         
+        # add edges based on sliding window:
+        for i in range(len(doc)):
+            word_str = doc[i]
+            
+            if word_str in vocab:
+                # 1. Use the string as the identifier (w1_id for NetworkX)
+                # 2. Use the integer ID as the label attribute (label=vocab[word_str])
+                w1_id = word_str 
+                w1_label = vocab[word_str]
+                
+                if not G.has_node(w1_id):
+                    # Add node with the integer label stored as an attribute
+                    G.add_node(w1_id, label=w1_label) 
+
+                for j in range(1, window_size):
+                    if i + j < len(doc):
+                        w2_str = doc[i+j]
+                        
+                        if w2_str in vocab and w1_id != w2_str:
+                            w2_id = w2_str
+                            w2_label = vocab[w2_str]
+                            
+                            if not G.has_node(w2_id):
+                                G.add_node(w2_id, label=w2_label)
+                                
+                            G.add_edge(w1_id, w2_id)
+
+        # Handle empty graphs to prevent downstream GraKeL errors
+        if len(G.nodes()) == 0:
+            G.add_node("dummy_node", label=-1) 
+            
         graphs.append(G)
     
     return graphs
-
 
 # Create graph-of-words representations
 G_train_nx = create_graphs_of_words(train_data, vocab, 3) 
 G_test_nx = create_graphs_of_words(test_data, vocab, 3)
 
 print("Example of graph-of-words representation of document")
-nx.draw_networkx(G_train_nx[3], with_labels=True)
-plt.show()
+# nx.draw_networkx(G_train_nx[3], with_labels=True)
+# plt.show()
 
 
 from grakel.utils import graph_from_networkx
@@ -128,8 +147,8 @@ from sklearn.metrics import accuracy_score
 # Task 12
 
 # Transform networkx graphs to grakel representations
-G_train =  [graph_from_networkx(G) for G in G_train_nx] # your code here #
-G_test =  [graph_from_networkx(G) for G in G_test_nx]# your code here #
+G_train = list(graph_from_networkx(G_train_nx, node_labels_tag='label'))
+G_test = list(graph_from_networkx(G_test_nx, node_labels_tag='label'))
 
 # Initialize a Weisfeiler-Lehman subtree kernel
 gk = WeisfeilerLehman(
@@ -140,7 +159,7 @@ gk = WeisfeilerLehman(
 
 # Construct kernel matrices
 K_train = gk.fit_transform(G_train) # your code here #
-K_test = gk.fit(G_test)# your code here #
+K_test = gk.transform(G_test)# your code here #
 
 #Task 13
 
@@ -168,3 +187,61 @@ print("Accuracy:", accuracy_score(y_pred, y_test))
 ##################
 # your code here #
 ##################
+
+from grakel.kernels import ShortestPath, RandomWalk
+
+# Define a dictionary of kernels to experiment with.
+kernel_experiments = {
+    "Vertex Histogram (Baseline)": VertexHistogram(normalize=True),
+    
+    "WL (h=2)": WeisfeilerLehman(n_iter=2, normalize=True, base_graph_kernel=VertexHistogram),
+    
+    "WL (h=4)": WeisfeilerLehman(n_iter=4, normalize=True, base_graph_kernel=VertexHistogram),
+    
+    # --- COMPUTATIONALLY EXPENSIVE KERNELS ---
+    # I have commented this out because your graphs contain the full vocabulary 
+    # as nodes (dense graphs), making the O(N^4) Shortest Path calculation extremely slow.
+    # To run it, simply remove the '#' at the start of the line below:
+    
+    "Shortest Path": ShortestPath(normalize=True, with_labels=True),
+
+    # "Random Walk (lambda=0.1)": RandomWalk(
+    #     kernel_type='geometric', 
+    #     lamda=0.1, 
+    #     normalize=True
+    # ),
+}
+
+results = {}
+
+for name, kernel in kernel_experiments.items():
+    print(f"Running experiment: {name}...")
+    
+    try:
+        # 1. Fit and Transform on Training Data
+        K_train_exp = kernel.fit_transform(G_train)
+        
+        # 2. Transform Test Data
+        K_test_exp = kernel.transform(G_test)
+        
+        # 3. Train SVM
+        clf_exp = SVC(kernel='precomputed')
+        clf_exp.fit(K_train_exp, y_train)
+        
+        # 4. Predict and Evaluate
+        y_pred_exp = clf_exp.predict(K_test_exp)
+        acc = accuracy_score(y_test, y_pred_exp)
+        
+        results[name] = acc
+        print(f"   -> Accuracy: {acc:.4f}\n")
+        
+    except Exception as e:
+        print(f"   -> Failed to run {name}: {e}\n")
+
+# Display final comparison table
+print("-" * 45)
+print(f"{'Kernel Name':<30} | {'Accuracy':<10}")
+print("-" * 45)
+for name, acc in results.items():
+    print(f"{name:<30} | {acc:.4f}")
+print("-" * 45)
