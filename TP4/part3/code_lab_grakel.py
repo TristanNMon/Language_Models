@@ -197,13 +197,14 @@ kernel_experiments = {
     "WL (h=2)": WeisfeilerLehman(n_iter=2, normalize=True, base_graph_kernel=VertexHistogram),
     
     "WL (h=4)": WeisfeilerLehman(n_iter=4, normalize=True, base_graph_kernel=VertexHistogram),
+
+    "Shortest Path": ShortestPath(normalize=True, with_labels=True),
     
     # --- COMPUTATIONALLY EXPENSIVE KERNELS ---
-    # I have commented this out because your graphs contain the full vocabulary 
-    # as nodes (dense graphs), making the O(N^4) Shortest Path calculation extremely slow.
+    # I have commented this out because the theoretical complexity of the RW kernel 
+    # is often cited as O(N 3) or higher, where N is the number of nodes.  
+    # making the Random Walk calculation extremely slow.
     # To run it, simply remove the '#' at the start of the line below:
-    
-    "Shortest Path": ShortestPath(normalize=True, with_labels=True),
 
     # "Random Walk (lambda=0.1)": RandomWalk(
     #     kernel_type='geometric', 
