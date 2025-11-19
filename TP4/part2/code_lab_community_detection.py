@@ -48,7 +48,7 @@ def spectral_clustering(G, k):
 ##################
 
 # Path to your txt file
-file_path = "datasets/CA-HepTh.txt"
+file_path = "../datasets/CA-HepTh.txt"
 
 # Load the directed graph
 G = nx.read_edgelist(

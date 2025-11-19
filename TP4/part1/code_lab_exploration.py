@@ -10,7 +10,7 @@ import numpy as np
 ############## Task 1
 
 # Path to your txt file
-file_path = "datasets/CA-HepTh.txt"
+file_path = "../datasets/CA-HepTh.txt"
 
 # Load the directed graph
 G = nx.read_edgelist(
