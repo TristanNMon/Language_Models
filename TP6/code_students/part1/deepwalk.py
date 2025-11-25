@@ -4,7 +4,7 @@ Deep Learning on Graphs - ALTEGRAD - Nov 2025
 
 import numpy as np
 import networkx as nx
-from random import randint
+from random import randint, shuffle
 from gensim.models import Word2Vec
 
 
@@ -15,9 +15,22 @@ def random_walk(G, node, walk_length):
     ##################
     # your code here #
     ##################
-    
-	walk = [str(node) for node in walk]
-	return walk
+    walk = [node]
+    for _ in range(walk_length):
+
+        neighbors = list(G.neighbors(node))
+
+        if not neighbors:
+            break
+
+        random_index = randint(0, len(neighbors) - 1)
+
+        node = neighbors[random_index]
+
+        walk.append(node)
+
+    walk = [str(node) for node in walk]
+    return walk
 
 
 ############## Task 2
@@ -28,8 +41,14 @@ def generate_walks(G, num_walks, walk_length):
     ##################
     # your code here #
     ##################
+    for node in G.nodes():
+        for _ in range(num_walks):
+            walk = random_walk(G, node, walk_length)
+            walks.append(walk)
+     
+    shuffle(walks)
 
-    return permuted_walks.tolist()
+    return walks
 
 
 # Simulates walks and uses the Skipgram model to learn node representations

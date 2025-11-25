@@ -8,6 +8,7 @@ from deepwalk import deepwalk
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
+from collections import Counter
 
 # Loads the web graph
 G = nx.read_weighted_edgelist('../data/web_sample.edgelist', delimiter=' ', create_using=nx.Graph())
@@ -25,17 +26,21 @@ walk_length = 20
 # your code here #
 ##################
 
+model = deepwalk(G, num_walks = n_walks, walk_length = walk_length, n_dim = n_dim)
+
 ############## Task 4
 # Visualizes the representations of the 100 nodes that appear most frequently in the generated walks
 def visualize(model, n, dim):
 
-    nodes = # your code here
+    nodes = model.wv.index_to_key[:n] # your code here
     DeepWalk_embeddings = np.empty(shape=(n, dim))
     
     ##################
     # your code here #
     ##################
+    for i, node in enumerate(nodes) :
 
+        DeepWalk_embeddings[i] = model.wv[node]
 
     my_pca = PCA(n_components=10)
     my_tsne = TSNE(n_components=2)

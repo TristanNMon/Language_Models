@@ -6,6 +6,7 @@ import networkx as nx
 import numpy as np
 from scipy.sparse.linalg import eigs
 from scipy.sparse import diags, eye
+import matplotlib.pyplot as plt
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.manifold import SpectralEmbedding
@@ -40,13 +41,41 @@ y = np.array(y)
 # your code here #
 ##################
 
+unique_labels = set(y)
+
+colors = plt.cm.get_cmap('viridis', len(unique_labels))
+
+label_to_color_map = {
+        label: colors(i) for i, label in enumerate(unique_labels)
+    }
+
+node_color_list = [
+        label_to_color_map[node_label] 
+        for node_label in y
+    ]
+
+plt.figure(figsize=(10, 7))
+    
+# Use spring_layout for positioning (often looks good)
+pos = nx.spring_layout(G, seed=42) 
+
+# Draw the graph, passing the generated color list
+nx.draw(
+    G, 
+    pos, 
+    node_color=node_color_list, 
+    with_labels=True, 
+    node_size=800, 
+    edge_color='gray',
+    font_size=10
+    )
 
 ############## Task 6
 # Extracts a set of random walks from the karate network and feeds them to the Skipgram model
 n_dim = 128
 n_walks = 10
 walk_length = 20
-model = # your code here
+model = deepwalk(G, num_walks = n_walks, walk_length = walk_length, n_dim = n_dim)
 
 embeddings = np.zeros((n, n_dim))
 for i, node in enumerate(G.nodes()):
@@ -71,6 +100,13 @@ y_test = y[idx_test]
 # your code here #
 ##################
 
+clf = LogisticRegression(random_state=0).fit(X_train, y_train)
+
+y_pred = clf.predict(X_test)
+
+acc_lr = accuracy_score(y_pred, y_test)
+
+# print(f"Classification accuracies of DeepWalk: {acc_lr:.5f} ")
 
 ############## Task 8
 # Generates spectral embeddings
@@ -78,3 +114,33 @@ y_test = y[idx_test]
 ##################
 # your code here #
 ##################
+
+def spectral_clustering(G, k):
+    # get adjacency matrix
+    A = nx.to_scipy_sparse_array(G, format="csr")
+    # compute Laplacian matrix
+    degrees = np.array(A.sum(axis=1)).flatten()
+    D_inv = diags(1/degrees)
+    L_rw = eye(G.number_of_nodes()) - D_inv @ A
+
+    # apply eigenvector decomposition 
+
+    _, eigvecs = eigs(L_rw, k=k, which = 'SM')
+
+    spectral_embeddings = eigvecs.real[:, 1:k] 
+
+    return spectral_embeddings
+
+spectral_embeddings = spectral_clustering(G, 2)
+
+X_train_spectral = embeddings[idx_train,:]
+X_test_spectral = embeddings[idx_test,:]
+
+clf_spectral = LogisticRegression(random_state=0).fit(X_train_spectral, y_train)
+
+y_pred_spectral = clf_spectral.predict(X_test_spectral)
+acc_spectral = accuracy_score(y_pred_spectral, y_test)
+
+print(f"Classification accuracy using DeepWalk (128D): {acc_lr:.5f}")
+print("\nVs\n")
+print(f"Classification accuracy using Spectral (2D): {acc_spectral:.5f}")

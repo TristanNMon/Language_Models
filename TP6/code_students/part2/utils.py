@@ -13,8 +13,21 @@ def normalize_adjacency(A):
     ##################
     # your code here #
     ##################
+
+    # compute A_tild = A + I 
+    # D_tild = np.diag( sum of rows of A_tild)
+    # A_hat = D_tild**(-0.5) @ A_tild @ D_tild**(-0.5)
     
-	return A_normalized
+    A_tilde = A + sp.identity(A.shape[0], format=A.format)
+
+    D_tilde = np.array(A.sum(axis=1)).flatten()
+
+    D_tilde_inv_sqrt = np.power(D_tilde, -0.5)
+
+    D_inv_sqrt = sp.diags(D_tilde_inv_sqrt, format=A.format)
+
+    A_normalized = D_inv_sqrt @ A_tilde @ D_inv_sqrt
+    return A_normalized
 
 
 def load_cora():
