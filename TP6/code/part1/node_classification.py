@@ -41,18 +41,7 @@ y = np.array(y)
 # your code here #
 ##################
 
-unique_labels = set(y)
-
-colors = plt.cm.get_cmap('viridis', len(unique_labels))
-
-label_to_color_map = {
-        label: colors(i) for i, label in enumerate(unique_labels)
-    }
-
-node_color_list = [
-        label_to_color_map[node_label] 
-        for node_label in y
-    ]
+colors = ['red' if label == 0 else 'blue' for label in y]
 
 plt.figure(figsize=(10, 7))
     
@@ -63,12 +52,16 @@ pos = nx.spring_layout(G, seed=42)
 nx.draw(
     G, 
     pos, 
-    node_color=node_color_list, 
+    node_color=colors, 
     with_labels=True, 
     node_size=800, 
     edge_color='gray',
     font_size=10
     )
+
+plt.title("Karate Network with Node Class Labels", fontsize=16)
+plt.savefig("karate_network.png", dpi=300, bbox_inches='tight')
+plt.show()
 
 ############## Task 6
 # Extracts a set of random walks from the karate network and feeds them to the Skipgram model

@@ -107,6 +107,7 @@ embeddings_test = test()
 # your code here #
 ##################
 
+embeddings_test_np = embeddings_test.detach().cpu().numpy()
 
 # Projects the emerging representations to two dimensions using t-SNE
 
@@ -114,6 +115,8 @@ embeddings_test = test()
 # your code here #
 ##################
 
+tsne = TSNE(n_components=2, random_state=88)
+embeddings_test_2d = tsne.fit_transform(embeddings_test_np)
 
 labels = class_labels[idx_test]
 unique_labels = np.unique(labels)

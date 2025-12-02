@@ -4,7 +4,8 @@ Deep Learning on Graphs - ALTEGRAD - Nov 2025
 
 import numpy as np
 import networkx as nx
-from random import randint, shuffle
+from random import randint
+import random
 from gensim.models import Word2Vec
 
 
@@ -15,39 +16,37 @@ def random_walk(G, node, walk_length):
     ##################
     # your code here #
     ##################
+
     walk = [node]
-    for _ in range(walk_length):
+    current = node
 
-        neighbors = list(G.neighbors(node))
-
-        if not neighbors:
+    for _ in range(walk_length-1):
+        neighbors = list(G.neighbors(current))
+        if len(neighbors) == 0: 
             break
-
-        random_index = randint(0, len(neighbors) - 1)
-
-        node = neighbors[random_index]
-
-        walk.append(node)
-
+        next_idx = randint(0, len(neighbors) - 1)
+        next_node = neighbors[next_idx]
+        walk.append(next_node)
+        current = next_node
     walk = [str(node) for node in walk]
     return walk
-
 
 ############## Task 2
 # Runs "num_walks" random walks from each node
 def generate_walks(G, num_walks, walk_length):
     walks = []
-    
+    nodes = list(G.nodes())
     ##################
     # your code here #
     ##################
-    for node in G.nodes():
-        for _ in range(num_walks):
+
+    for _ in range(num_walks):
+        random.shuffle(nodes)
+
+        for node in nodes:
             walk = random_walk(G, node, walk_length)
             walks.append(walk)
-     
-    shuffle(walks)
-
+    random.shuffle(walks)    
     return walks
 
 

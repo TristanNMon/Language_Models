@@ -23,11 +23,17 @@ class GNN(nn.Module):
         ##################
         # your code here #
         ##################
-        H0 = self.fc1(x_in)
-        Z0 = self.relu(torch.mm(adj,H0))
-        Z0_dropout = self.dropout(Z0)
-        H1 = self.fc2(Z0_dropout)
-        Z1 = self.relu(torch.mm(adj,H1))
-        x = self.fc3(Z1)
 
-        return F.log_softmax(x, dim=1)
+        h = self.fc1(x_in)      
+        h = torch.mm(adj, h)   
+        h = self.relu(h)        
+        h = self.dropout(h)  
+
+        h2 = self.fc2(h)      
+        h2 = torch.mm(adj, h2)   
+        h2 = self.relu(h2)        
+        h2 = self.dropout(h2) 
+
+        x = self.fc3(h2) 
+
+        return F.log_softmax(x, dim=1), h2
